@@ -32,8 +32,18 @@ public class ExpenseSvcIntegrationTest {
     int port;
 
     @Test
-    public void testListExpensesEndpoint() {
+    public void testListExpenses_NoMonthSpecified() {
         ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list", port),
+                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        List<Expense> expenses = response.getBody();
+        assertEquals(6, expenses.size());
+    }
+
+    @Test
+    public void testListExpenses_WithValidMonthSpecified() {
+        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-01", port),
                 HttpMethod.GET, null, EXPENSE_LIST_TYPE);
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
@@ -44,6 +54,23 @@ public class ExpenseSvcIntegrationTest {
                 new Expense(2L, "Starbucks", 1200.0, LocalDate.of(2019, 1, 12), ExpenseCategory.CAFE, "test@test.co.uk"),
                 new Expense(3L, "Electric Co.", 22500.0, LocalDate.of(2019, 1, 12), ExpenseCategory.UTILITIES, "test@test.co.uk")
         )));
+    }
+
+    @Test
+    public void testListExpenses_WithInvalidMonthSpecified_ReturnsBadRequest() {
+        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-13", port),
+                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    public void testListExpenses_WithValidMonthSpecified_NoExpensesRegistered() {
+        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-5", port),
+                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        List<Expense> expenses = response.getBody();
+        assertEquals(0, expenses.size());
     }
 
 }

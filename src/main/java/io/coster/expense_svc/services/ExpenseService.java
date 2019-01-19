@@ -15,16 +15,17 @@ public class ExpenseService {
         this.expenseRepository = expenseRepository;
     }
 
-    public List<Expense> getAllExpensesByUserId(String id) {
-        return expenseRepository.findAllByUserId(id);
+    public List<Expense> getAllExpensesByUserId(String userId) {
+        return expenseRepository.findAllByUserId(userId);
     }
 
-    // GET ALL BY USER_ID AND MONTH
+    public List<Expense> getAllExpensesByUserIdAndYearAndMonth(String userId, int year, int month) {
+        return expenseRepository.findAllByUserIdAndYearAndMonth(userId, year, month);
+    }
 
     public void saveExpense(Expense expense) {
         expenseRepository.save(expense);
     }
-
     // DELETE
 
     // UDPATE

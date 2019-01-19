@@ -8,6 +8,7 @@ public enum ExpenseCategory {
     UTILITIES,
     CLOTHES,
     ELECTRONICS,
+    ENTERTAINMENT,
     OTHER_SHOPPING,
     OTHER_MISC
 }
