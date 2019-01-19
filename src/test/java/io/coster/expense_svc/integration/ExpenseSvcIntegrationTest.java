@@ -1,5 +1,6 @@
 package io.coster.expense_svc.integration;
 
+import io.coster.expense_svc.controllers.ExpenseCrudController;
 import io.coster.expense_svc.domain.Expense;
 import io.coster.expense_svc.domain.ExpenseCategory;
 import org.junit.Test;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,14 +59,7 @@ public class ExpenseSvcIntegrationTest {
     }
 
     @Test
-    public void testListExpenses_WithInvalidMonthSpecified_ReturnsBadRequest() {
-        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-13", port),
-                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    public void testListExpenses_WithValidMonthSpecified_NoExpensesRegistered() {
+    public void testListExpenses_WithValidMonthSpecified_ButNoExpenses() {
         ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-5", port),
                 HttpMethod.GET, null, EXPENSE_LIST_TYPE);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -73,4 +68,38 @@ public class ExpenseSvcIntegrationTest {
         assertEquals(0, expenses.size());
     }
 
+    @Test
+    public void testListExpenses_WithInvalidMonthSpecified_ReturnsBadRequest() {
+        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-13", port),
+                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+
+    @Test
+    public void testCreateExpense_WithValidRequest_ThenDeleteIt() {
+        Expense expense = Expense.builder()
+                .location("Diner")
+                .amount(5000d)
+                .date(LocalDate.of(2020, 8, 19))
+                .category(ExpenseCategory.EATOUT)
+                .userId("test@test.co.uk")
+                .build();
+
+        // create new expense
+        ResponseEntity<Expense> postResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/create", port),
+                HttpMethod.POST, new HttpEntity<>(expense), Expense.class);
+        assertEquals(HttpStatus.OK, postResponse.getStatusCode());
+
+        // check if it's in the table
+        ResponseEntity<List<Expense>> getResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2020-08", port),
+                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+        assertTrue(getResponse.getBody().contains(postResponse.getBody()));
+
+        // finally, delete it
+        ExpenseCrudController.DeleteExpenseRequest deleteRequest = new ExpenseCrudController.DeleteExpenseRequest("test@test.co.uk", postResponse.getBody().getId());
+        ResponseEntity deleteResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/delete", port),
+                HttpMethod.POST, new HttpEntity<>(deleteRequest), Expense.class);
+        assertEquals(HttpStatus.OK, deleteResponse.getStatusCode());
+    }
 }

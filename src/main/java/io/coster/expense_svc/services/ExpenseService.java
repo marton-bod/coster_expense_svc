@@ -23,8 +23,12 @@ public class ExpenseService {
         return expenseRepository.findAllByUserIdAndYearAndMonth(userId, year, month);
     }
 
-    public void saveExpense(Expense expense) {
-        expenseRepository.save(expense);
+    public Expense saveExpense(Expense expense) {
+        return expenseRepository.save(expense);
+    }
+
+    public void deleteExpensebyUserIdAndExpenseId(String userId, Long expenseId) {
+        expenseRepository.deleteExpensebyUserIdAndExpenseId(userId, expenseId);
     }
     // DELETE
 

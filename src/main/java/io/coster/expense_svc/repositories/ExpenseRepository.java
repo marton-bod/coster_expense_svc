@@ -2,8 +2,10 @@ package io.coster.expense_svc.repositories;
 
 import io.coster.expense_svc.domain.Expense;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
@@ -11,4 +13,9 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     @Query("SELECT e from Expense e WHERE e.userId = ?1 AND YEAR(e.date) = ?2 AND MONTH(e.date) = ?3")
     List<Expense> findAllByUserIdAndYearAndMonth(String userId, int year, int month);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE from Expense e WHERE e.userId = ?1 AND e.id = ?2")
+    void deleteExpensebyUserIdAndExpenseId(String userId, Long expenseId);
 }

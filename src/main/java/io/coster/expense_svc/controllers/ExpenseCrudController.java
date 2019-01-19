@@ -3,14 +3,19 @@ package io.coster.expense_svc.controllers;
 import io.coster.expense_svc.domain.Expense;
 import io.coster.expense_svc.services.ExpenseService;
 import io.coster.expense_svc.utilities.ParserUtil;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -35,9 +40,25 @@ public class ExpenseCrudController {
             List<Expense> expenses = expenseService.getAllExpensesByUserIdAndYearAndMonth("test@test.co.uk", result.getYear(), result.getMonth());
             return new ResponseEntity<>(expenses, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(List.of(new Expense()), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(Collections.emptyList(), HttpStatus.BAD_REQUEST);
         }
     }
 
+    @PostMapping("/create")
+    public ResponseEntity<Expense> createExpense(@RequestBody Expense expense) {
+        Expense saved = expenseService.saveExpense(expense);
+        return new ResponseEntity<>(saved, HttpStatus.OK);
+    }
 
+    @PostMapping("/delete")
+    public ResponseEntity deleteExpense(@RequestBody DeleteExpenseRequest request) {
+        expenseService.deleteExpensebyUserIdAndExpenseId(request.getUserId(), request.getExpenseId());
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @Data @AllArgsConstructor @NoArgsConstructor
+    public static class DeleteExpenseRequest {
+        String userId;
+        Long expenseId;
+    }
 }
