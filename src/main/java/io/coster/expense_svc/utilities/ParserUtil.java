@@ -10,7 +10,7 @@ public class ParserUtil {
             String[] yearAndMonth = param.split("-");
             int y = Integer.parseInt(yearAndMonth[0]);
             int m = Integer.parseInt(yearAndMonth[1]);
-            if (2019 <= y && y <= 2025 && 1 <= m && m <= 12) {
+            if (2015 <= y && y <= 2030 && 1 <= m && m <= 12) {
                 return YearMonthParseResult.builder()
                         .isValid(true)
                         .year(y)

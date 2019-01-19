@@ -4,6 +4,7 @@ import io.coster.expense_svc.domain.Expense;
 import io.coster.expense_svc.repositories.ExpenseRepository;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -27,10 +28,10 @@ public class ExpenseService {
         return expenseRepository.save(expense);
     }
 
+    @Transactional
     public void deleteExpensebyUserIdAndExpenseId(String userId, Long expenseId) {
-        expenseRepository.deleteExpensebyUserIdAndExpenseId(userId, expenseId);
+        expenseRepository.deleteByUserIdAndId(userId, expenseId);
     }
-    // DELETE
 
     // UDPATE
 
