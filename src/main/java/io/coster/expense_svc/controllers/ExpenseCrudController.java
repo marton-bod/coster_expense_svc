@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.List;
@@ -51,14 +52,18 @@ public class ExpenseCrudController {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity deleteExpense(@RequestBody DeleteExpenseRequest request) {
-        expenseService.deleteExpensebyUserIdAndExpenseId(request.getUserId(), request.getExpenseId());
+    public ResponseEntity deleteExpense(@RequestBody Expense expense) {
+        expenseService.deleteExpenseByUserIdAndExpenseId(expense.getUserId(), expense.getId());
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @Data @AllArgsConstructor @NoArgsConstructor
-    public static class DeleteExpenseRequest {
-        String userId;
-        Long expenseId;
+    @PostMapping("/modify")
+    public ResponseEntity<Expense> modifyExpense(@RequestBody Expense expense) {
+        try {
+            Expense modifiedExpense = expenseService.modifyExpense(expense);
+            return new ResponseEntity<>(modifiedExpense, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
     }
 }

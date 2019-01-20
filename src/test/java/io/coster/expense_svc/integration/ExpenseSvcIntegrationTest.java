@@ -1,6 +1,5 @@
 package io.coster.expense_svc.integration;
 
-import io.coster.expense_svc.controllers.ExpenseCrudController;
 import io.coster.expense_svc.domain.Expense;
 import io.coster.expense_svc.domain.ExpenseCategory;
 import org.junit.Test;
@@ -20,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
@@ -87,19 +87,55 @@ public class ExpenseSvcIntegrationTest {
                 .build();
 
         // create new expense
-        ResponseEntity<Expense> postResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/create", port),
+        ResponseEntity<Expense> createResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/create", port),
                 HttpMethod.POST, new HttpEntity<>(expense), Expense.class);
-        assertEquals(HttpStatus.OK, postResponse.getStatusCode());
+        assertEquals(HttpStatus.OK, createResponse.getStatusCode());
 
         // check if it's in the table
         ResponseEntity<List<Expense>> getResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2020-08", port),
                 HttpMethod.GET, null, EXPENSE_LIST_TYPE);
-        assertTrue(getResponse.getBody().contains(postResponse.getBody()));
+        assertTrue(getResponse.getBody().contains(createResponse.getBody()));
 
         // finally, delete it
-        ExpenseCrudController.DeleteExpenseRequest deleteRequest = new ExpenseCrudController.DeleteExpenseRequest("test@test.co.uk", postResponse.getBody().getId());
         ResponseEntity deleteResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/delete", port),
-                HttpMethod.POST, new HttpEntity<>(deleteRequest), Expense.class);
+                HttpMethod.POST, new HttpEntity<>(createResponse), Expense.class);
         assertEquals(HttpStatus.OK, deleteResponse.getStatusCode());
+    }
+
+    @Test
+    public void testModifyExpense_WithValidRequest() {
+        Expense modifiedExpense =  Expense.builder()
+                .id(5L)
+                .location("Spar")
+                .amount(55000d)
+                .category(ExpenseCategory.UTILITIES)
+                .date(LocalDate.of(2019, 9, 12))
+                .userId("test@test.co.uk")
+                .build();
+        restTemplate.exchange(String.format("http://localhost:%d/expense/modify", port),
+                HttpMethod.POST, new HttpEntity<>(modifiedExpense), Expense.class);
+
+        ResponseEntity<List<Expense>> getResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/list", port),
+                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+        assertTrue(getResponse.getBody().contains(modifiedExpense));
+    }
+
+    @Test
+    public void testModifyExpense_WithInvalidRequest() {
+        Expense expenseThatDoesNotExist =  Expense.builder()
+                .id(5400L)
+                .location("Electric Co.")
+                .amount(55000d)
+                .category(ExpenseCategory.UTILITIES)
+                .date(LocalDate.of(2019, 1, 12))
+                .userId("test@test.co.uk")
+                .build();
+        ResponseEntity<Expense> modifyResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/modify", port),
+                HttpMethod.POST, new HttpEntity<>(expenseThatDoesNotExist), Expense.class);
+        assertEquals(HttpStatus.BAD_REQUEST, modifyResponse.getStatusCode());
+
+        ResponseEntity<List<Expense>> getResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/list", port),
+                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+        assertFalse(getResponse.getBody().contains(expenseThatDoesNotExist));
     }
 }

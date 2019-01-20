@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ExpenseService {
@@ -29,10 +30,24 @@ public class ExpenseService {
     }
 
     @Transactional
-    public void deleteExpensebyUserIdAndExpenseId(String userId, Long expenseId) {
+    public void deleteExpenseByUserIdAndExpenseId(String userId, Long expenseId) {
         expenseRepository.deleteByUserIdAndId(userId, expenseId);
     }
 
-    // UDPATE
+    public Expense modifyExpense(Expense expense) {
+        Optional<Expense> byId = expenseRepository.findById(expense.getId());
+        Expense old = byId.orElseThrow(() -> new IllegalArgumentException("Expense does not exist!"));
+        updateExpense(old, expense);
+        expenseRepository.saveAndFlush(old);
+        return old;
+    }
+
+    private void updateExpense(Expense oldExpense, Expense newExpense) {
+        oldExpense.setAmount(newExpense.getAmount());
+        oldExpense.setLocation(newExpense.getLocation());
+        oldExpense.setDate(newExpense.getDate());
+        oldExpense.setCategory(newExpense.getCategory());
+        oldExpense.setUserId(newExpense.getUserId());
+    }
 
 }
