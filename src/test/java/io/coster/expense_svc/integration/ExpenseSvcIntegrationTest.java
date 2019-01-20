@@ -70,8 +70,8 @@ public class ExpenseSvcIntegrationTest {
 
     @Test
     public void testListExpenses_WithInvalidMonthSpecified_ReturnsBadRequest() {
-        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-13", port),
-                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+        ResponseEntity response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-13", port),
+                HttpMethod.GET, null, Object.class);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 

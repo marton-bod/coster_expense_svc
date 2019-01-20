@@ -8,6 +8,8 @@ import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+
 @Service
 public class ExpenseService {
 
@@ -26,7 +28,24 @@ public class ExpenseService {
     }
 
     public Expense saveExpense(Expense expense) {
+        validateExpense(expense);
         return expenseRepository.save(expense);
+    }
+
+    private void validateExpense(Expense expense) {
+        if (isBlank(expense.getLocation()) || isNull(expense.getAmount()) || isNull(expense.getDate())
+                || isNull(expense.getCategory()) || isNull(expense.getUserId())) {
+            throw new IllegalArgumentException("None of the fields can be null or empty!");
+        }
+
+        if (expense.getAmount() <= 0) {
+            throw new IllegalArgumentException("Only positive amount values are allowed.");
+        }
+        // if user_id does not exist?
+    }
+
+    private boolean isBlank(String string) {
+        return string == null || string.trim().isEmpty();
     }
 
     @Transactional

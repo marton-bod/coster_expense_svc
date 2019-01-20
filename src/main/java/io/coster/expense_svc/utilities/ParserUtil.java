@@ -1,31 +1,29 @@
 package io.coster.expense_svc.utilities;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 public class ParserUtil {
 
-    public static YearMonthParseResult parseYearAndMonth(String param) {
+    public static YearAndMonth parseYearAndMonth(String param) {
+        int y, m;
         try {
             String[] yearAndMonth = param.split("-");
-            int y = Integer.parseInt(yearAndMonth[0]);
-            int m = Integer.parseInt(yearAndMonth[1]);
-            if (2015 <= y && y <= 2030 && 1 <= m && m <= 12) {
-                return YearMonthParseResult.builder()
-                        .isValid(true)
-                        .year(y)
-                        .month(m)
-                        .build();
-            }
+            y = Integer.parseInt(yearAndMonth[0]);
+            m = Integer.parseInt(yearAndMonth[1]);
         } catch (Exception e) {
+            throw new IllegalArgumentException("Year and month cannot be parsed into valid values: " + param);
         }
-        return YearMonthParseResult.builder().isValid(false).build();
+        if (2015 <= y && y <= 2030 && 1 <= m && m <= 12) {
+            return new YearAndMonth(y, m);
+        } else {
+            throw new IllegalArgumentException("Year must be between 2015-2030, month must be between 1-12.");
+        }
     }
 
     @Getter
-    @Builder
-    public static class YearMonthParseResult {
-        boolean isValid;
+    @AllArgsConstructor
+    public static class YearAndMonth {
         int year;
         int month;
     }

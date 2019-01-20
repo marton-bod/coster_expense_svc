@@ -23,8 +23,8 @@ public class ExpenseConfig {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.any())
-                .paths(PathSelectors.any())
+                .apis(RequestHandlerSelectors.basePackage("io.coster.expense_svc.controllers"))
+                .paths(PathSelectors.ant("/expense/*"))
                 .build();
     }
 
