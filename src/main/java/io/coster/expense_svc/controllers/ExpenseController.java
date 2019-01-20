@@ -30,26 +30,26 @@ public class ExpenseController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<Expense>> listExpenses(@CookieValue(value = "auth_token", required = false) String token,
-                                                      @CookieValue(value = "auth_id", required = false) String userId,
+    public ResponseEntity<List<Expense>> listExpenses(@CookieValue(value = "auth_token") String token,
+                                                      @CookieValue(value = "auth_id") String userId,
                                                       @RequestParam(value = "month", required = false) String month) {
 
         checkAuthCredentials(token, userId);
         if (month == null) {
-            List<Expense> expenses = expenseService.getAllExpensesByUserId("test@test.co.uk");
+            List<Expense> expenses = expenseService.getAllExpensesByUserId(userId);
             return new ResponseEntity<>(expenses, HttpStatus.OK);
         }
 
         try {
             ParserUtil.YearAndMonth result = ParserUtil.parseYearAndMonth(month);
-            List<Expense> expenses = expenseService.getAllExpensesByUserIdAndYearAndMonth("test@test.co.uk", result.getYear(), result.getMonth());
+            List<Expense> expenses = expenseService.getAllExpensesByUserIdAndYearAndMonth(userId, result.getYear(), result.getMonth());
             return new ResponseEntity<>(expenses, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
 
-    private void checkAuthCredentials(@CookieValue(value = "auth_token", required = false) String token, @CookieValue(value = "auth_id", required = false) String userId) {
+    private void checkAuthCredentials(String token, String userId) {
         boolean isValid = authenticationService.isUserAndTokenValid(userId, token);
         if (!isValid) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid credentials!");
@@ -57,7 +57,7 @@ public class ExpenseController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Expense> createExpense(@CookieValue(value = "auth_token", required = false) String token,
+    public ResponseEntity<Expense> createExpense(@CookieValue(value = "auth_token") String token,
                                                  @RequestBody Expense expense) {
 
         checkAuthCredentials(token, expense.getUserId());
@@ -70,7 +70,7 @@ public class ExpenseController {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity deleteExpense(@CookieValue(value = "auth_token", required = false) String token,
+    public ResponseEntity deleteExpense(@CookieValue(value = "auth_token") String token,
                                         @RequestBody Expense expense) {
 
         checkAuthCredentials(token, expense.getUserId());
@@ -79,7 +79,7 @@ public class ExpenseController {
     }
 
     @PostMapping("/modify")
-    public ResponseEntity<Expense> modifyExpense(@CookieValue(value = "auth_token", required = false) String token,
+    public ResponseEntity<Expense> modifyExpense(@CookieValue(value = "auth_token") String token,
                                                  @RequestBody Expense expense) {
 
         checkAuthCredentials(token, expense.getUserId());

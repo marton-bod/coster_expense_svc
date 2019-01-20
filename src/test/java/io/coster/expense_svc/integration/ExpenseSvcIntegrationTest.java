@@ -9,6 +9,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -35,20 +37,37 @@ public class ExpenseSvcIntegrationTest {
 
     @Test
     public void testListExpenses_NoMonthSpecified() {
-        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list", port),
-                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
 
+        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list", port),
+                HttpMethod.GET, new HttpEntity<>(cookieHeaders), EXPENSE_LIST_TYPE);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         List<Expense> expenses = response.getBody();
         assertEquals(6, expenses.size());
     }
 
+    private HttpHeaders getCookieHeaders(String userId, String token) {
+        HttpHeaders requestHeaders = new HttpHeaders();
+        List<String> cookies = new ArrayList<>();
+        if (userId != null) {
+            cookies.add("auth_id=" + userId);
+        }
+        if (token != null) {
+            cookies.add("auth_token=" + token);
+        }
+        requestHeaders.put(HttpHeaders.COOKIE, cookies);
+        return requestHeaders;
+    }
+
     @Test
     public void testListExpenses_WithValidMonthSpecified() {
-        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-01", port),
-                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
 
+        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-01", port),
+                HttpMethod.GET, new HttpEntity<>(cookieHeaders), EXPENSE_LIST_TYPE);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         List<Expense> expenses = response.getBody();
         assertEquals(3, expenses.size());
         assertTrue(expenses.containsAll(List.of(
@@ -60,18 +79,23 @@ public class ExpenseSvcIntegrationTest {
 
     @Test
     public void testListExpenses_WithValidMonthSpecified_ButNoExpenses() {
-        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-5", port),
-                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
 
+        ResponseEntity<List<Expense>> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-5", port),
+                HttpMethod.GET, new HttpEntity<>(cookieHeaders), EXPENSE_LIST_TYPE);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         List<Expense> expenses = response.getBody();
         assertEquals(0, expenses.size());
     }
 
     @Test
     public void testListExpenses_WithInvalidMonthSpecified_ReturnsBadRequest() {
+        HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
+
         ResponseEntity response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-13", port),
-                HttpMethod.GET, null, Object.class);
+                HttpMethod.GET, new HttpEntity<>(cookieHeaders), Object.class);
+
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
 
@@ -85,20 +109,21 @@ public class ExpenseSvcIntegrationTest {
                 .category(ExpenseCategory.EATOUT)
                 .userId("test@test.co.uk")
                 .build();
+        HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
 
         // create new expense
         ResponseEntity<Expense> createResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/create", port),
-                HttpMethod.POST, new HttpEntity<>(expense), Expense.class);
+                HttpMethod.POST, new HttpEntity<>(expense, cookieHeaders), Expense.class);
         assertEquals(HttpStatus.OK, createResponse.getStatusCode());
 
         // check if it's in the table
         ResponseEntity<List<Expense>> getResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2020-08", port),
-                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+                HttpMethod.GET, new HttpEntity<>(cookieHeaders), EXPENSE_LIST_TYPE);
         assertTrue(getResponse.getBody().contains(createResponse.getBody()));
 
         // finally, delete it
         ResponseEntity deleteResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/delete", port),
-                HttpMethod.POST, new HttpEntity<>(createResponse), Expense.class);
+                HttpMethod.POST, new HttpEntity<>(createResponse, cookieHeaders), Expense.class);
         assertEquals(HttpStatus.OK, deleteResponse.getStatusCode());
     }
 
@@ -112,11 +137,14 @@ public class ExpenseSvcIntegrationTest {
                 .date(LocalDate.of(2019, 9, 12))
                 .userId("test@test.co.uk")
                 .build();
+        HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
+
         restTemplate.exchange(String.format("http://localhost:%d/expense/modify", port),
-                HttpMethod.POST, new HttpEntity<>(modifiedExpense), Expense.class);
+                HttpMethod.POST, new HttpEntity<>(modifiedExpense, cookieHeaders), Expense.class);
 
         ResponseEntity<List<Expense>> getResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/list", port),
-                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+                HttpMethod.GET, new HttpEntity<>(cookieHeaders), EXPENSE_LIST_TYPE);
+
         assertTrue(getResponse.getBody().contains(modifiedExpense));
     }
 
@@ -130,12 +158,14 @@ public class ExpenseSvcIntegrationTest {
                 .date(LocalDate.of(2019, 1, 12))
                 .userId("test@test.co.uk")
                 .build();
+        HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
+
         ResponseEntity<Expense> modifyResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/modify", port),
-                HttpMethod.POST, new HttpEntity<>(expenseThatDoesNotExist), Expense.class);
+                HttpMethod.POST, new HttpEntity<>(expenseThatDoesNotExist, cookieHeaders), Expense.class);
         assertEquals(HttpStatus.BAD_REQUEST, modifyResponse.getStatusCode());
 
         ResponseEntity<List<Expense>> getResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/list", port),
-                HttpMethod.GET, null, EXPENSE_LIST_TYPE);
+                HttpMethod.GET, new HttpEntity<>(cookieHeaders), EXPENSE_LIST_TYPE);
         assertFalse(getResponse.getBody().contains(expenseThatDoesNotExist));
     }
 }
