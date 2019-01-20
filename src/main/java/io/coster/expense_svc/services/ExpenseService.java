@@ -14,9 +14,11 @@ import static java.util.Objects.isNull;
 public class ExpenseService {
 
     private ExpenseRepository expenseRepository;
+    private AuthenticationService authenticationService;
 
-    public ExpenseService(ExpenseRepository expenseRepository) {
+    public ExpenseService(ExpenseRepository expenseRepository, AuthenticationService authenticationService) {
         this.expenseRepository = expenseRepository;
+        this.authenticationService = authenticationService;
     }
 
     public List<Expense> getAllExpensesByUserId(String userId) {
@@ -28,20 +30,23 @@ public class ExpenseService {
     }
 
     public Expense saveExpense(Expense expense) {
-        validateExpense(expense);
+        validateNewExpense(expense);
         return expenseRepository.save(expense);
     }
 
-    private void validateExpense(Expense expense) {
+    private void validateNewExpense(Expense expense) {
         if (isBlank(expense.getLocation()) || isNull(expense.getAmount()) || isNull(expense.getDate())
                 || isNull(expense.getCategory()) || isNull(expense.getUserId())) {
             throw new IllegalArgumentException("None of the fields can be null or empty!");
         }
 
         if (expense.getAmount() <= 0) {
-            throw new IllegalArgumentException("Only positive amount values are allowed.");
+            throw new IllegalArgumentException("Only positive amount values are allowed!");
         }
-        // if user_id does not exist?
+
+        if (!authenticationService.doesUserIdExist(expense.getUserId())) {
+            throw new IllegalArgumentException("User ID does not exist!");
+        }
     }
 
     private boolean isBlank(String string) {

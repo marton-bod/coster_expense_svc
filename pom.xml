@@ -10,9 +10,9 @@
 	</parent>
 	<groupId>io.coster</groupId>
 	<artifactId>expense_svc</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<name>expense_svc</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Service responsible for storing, modifying and deleting expense data.</description>
 
 	<properties>
 		<java.version>1.9</java.version>
