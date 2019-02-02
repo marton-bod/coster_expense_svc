@@ -35,6 +35,8 @@ public class ExpenseSvcIntegrationTest {
     @LocalServerPort
     int port;
 
+    // create wiremock for user service
+
     @Test
     public void testListExpenses_NoMonthSpecified() {
         HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
