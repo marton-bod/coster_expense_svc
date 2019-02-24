@@ -7,13 +7,11 @@ import io.coster.expense_svc.utilities.ParserUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -60,9 +58,10 @@ public class ExpenseController {
 
     @PostMapping("/create")
     public ResponseEntity<Expense> createExpense(@CookieValue(value = "auth_token") String token,
+                                                 @CookieValue(value = "auth_id") String userId,
                                                  @RequestBody Expense expense) {
 
-        checkAuthCredentials(token, expense.getUserId());
+        checkAuthCredentials(token, userId);
         try {
             Expense saved = expenseService.saveExpense(expense);
             return new ResponseEntity<>(saved, HttpStatus.OK);
@@ -71,20 +70,22 @@ public class ExpenseController {
         }
     }
 
-    @PostMapping("/delete")
+    @GetMapping("/delete")
     public ResponseEntity deleteExpense(@CookieValue(value = "auth_token") String token,
-                                        @RequestBody Expense expense) {
+                                        @CookieValue(value = "auth_id") String userId,
+                                        @RequestParam("id") Long expenseId) {
 
-        checkAuthCredentials(token, expense.getUserId());
-        expenseService.deleteExpenseByUserIdAndExpenseId(expense.getUserId(), expense.getId());
+        checkAuthCredentials(token, userId);
+        expenseService.deleteExpenseByUserIdAndExpenseId(userId, expenseId);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @PostMapping("/modify")
     public ResponseEntity<Expense> modifyExpense(@CookieValue(value = "auth_token") String token,
+                                                 @CookieValue(value = "auth_id") String userId,
                                                  @RequestBody Expense expense) {
 
-        checkAuthCredentials(token, expense.getUserId());
+        checkAuthCredentials(token, userId);
         try {
             Expense modifiedExpense = expenseService.modifyExpense(expense);
             return new ResponseEntity<>(modifiedExpense, HttpStatus.OK);
