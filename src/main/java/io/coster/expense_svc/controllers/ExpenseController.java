@@ -33,19 +33,20 @@ public class ExpenseController {
     public ResponseEntity<List<Expense>> listExpenses(@CookieValue(value = "auth_token") String token,
                                                       @CookieValue(value = "auth_id") String userId,
                                                       @RequestParam(value = "month", required = false) String month) {
-
         checkAuthCredentials(token, userId);
-        if (month == null) {
-            List<Expense> expenses = expenseService.getAllExpensesByUserId(userId);
-            return new ResponseEntity<>(expenses, HttpStatus.OK);
-        }
-
         try {
-            ParserUtil.YearAndMonth result = ParserUtil.parseYearAndMonth(month);
-            List<Expense> expenses = expenseService.getAllExpensesByUserIdAndYearAndMonth(userId, result.getYear(), result.getMonth());
+            List<Expense> expenses;
+            if (month == null) {
+                expenses = expenseService.getAllExpensesByUserId(userId);
+            } else {
+                ParserUtil.YearAndMonth result = ParserUtil.parseYearAndMonth(month);
+                expenses = expenseService.getAllExpensesByUserIdAndYearAndMonth(userId, result.getYear(), result.getMonth());
+            }
             return new ResponseEntity<>(expenses, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
         }
     }
 

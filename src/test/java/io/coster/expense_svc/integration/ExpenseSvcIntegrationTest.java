@@ -1,7 +1,13 @@
 package io.coster.expense_svc.integration;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import io.coster.expense_svc.domain.Expense;
 import io.coster.expense_svc.domain.ExpenseCategory;
+import io.coster.usermanagementsvc.contract.AuthenticationResponse;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +26,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -30,12 +41,26 @@ import static org.junit.Assert.assertTrue;
 public class ExpenseSvcIntegrationTest {
 
     private static final ParameterizedTypeReference<List<Expense>> EXPENSE_LIST_TYPE = new ParameterizedTypeReference<>() {};
+    private static WireMockServer wireMockServer;
     private TestRestTemplate restTemplate = new TestRestTemplate();
 
     @LocalServerPort
     int port;
 
-    // create wiremock for user service
+    @BeforeClass
+    public static void startWireMock() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        AuthenticationResponse response = AuthenticationResponse.builder()
+                .valid(true)
+                .build();
+        configureFor("localhost", 10001);
+        wireMockServer = new WireMockServer(10001);
+        wireMockServer.start();
+        stubFor(post(urlEqualTo("/auth/validate")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-type", "application/json")
+                .withBody(objectMapper.writeValueAsString(response))));
+    }
 
     @Test
     public void testListExpenses_NoMonthSpecified() {
@@ -124,8 +149,11 @@ public class ExpenseSvcIntegrationTest {
         assertTrue(getResponse.getBody().contains(createResponse.getBody()));
 
         // finally, delete it
-        ResponseEntity deleteResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/delete", port),
-                HttpMethod.POST, new HttpEntity<>(createResponse, cookieHeaders), Expense.class);
+        ResponseEntity deleteResponse = restTemplate.exchange(
+                String.format("http://localhost:%d/expense/delete?id=%d", port, createResponse.getBody().getId()),
+                HttpMethod.GET,
+                new HttpEntity<>(cookieHeaders),
+                Object.class);
         assertEquals(HttpStatus.OK, deleteResponse.getStatusCode());
     }
 
@@ -169,5 +197,10 @@ public class ExpenseSvcIntegrationTest {
         ResponseEntity<List<Expense>> getResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/list", port),
                 HttpMethod.GET, new HttpEntity<>(cookieHeaders), EXPENSE_LIST_TYPE);
         assertFalse(getResponse.getBody().contains(expenseThatDoesNotExist));
+    }
+
+    @AfterClass
+    public static void shutdownWireMock() {
+        wireMockServer.stop();
     }
 }
