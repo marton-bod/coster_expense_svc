@@ -7,11 +7,13 @@ import io.coster.expense_svc.utilities.ParserUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -34,20 +36,14 @@ public class ExpenseController {
                                                       @CookieValue(value = "auth_id") String userId,
                                                       @RequestParam(value = "month", required = false) String month) {
         checkAuthCredentials(token, userId);
-        try {
-            List<Expense> expenses;
-            if (month == null) {
-                expenses = expenseService.getAllExpensesByUserId(userId);
-            } else {
-                ParserUtil.YearAndMonth result = ParserUtil.parseYearAndMonth(month);
-                expenses = expenseService.getAllExpensesByUserIdAndYearAndMonth(userId, result.getYear(), result.getMonth());
-            }
-            return new ResponseEntity<>(expenses, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+        List<Expense> expenses;
+        if (month == null) {
+            expenses = expenseService.getAllExpensesByUserId(userId);
+        } else {
+            ParserUtil.YearAndMonth result = ParserUtil.parseYearAndMonth(month);
+            expenses = expenseService.getAllExpensesByUserIdAndYearAndMonth(userId, result.getYear(), result.getMonth());
         }
+        return new ResponseEntity<>(expenses, HttpStatus.OK);
     }
 
     private void checkAuthCredentials(String token, String userId) {
@@ -63,12 +59,8 @@ public class ExpenseController {
                                                  @RequestBody Expense expense) {
 
         checkAuthCredentials(token, userId);
-        try {
-            Expense saved = expenseService.saveExpense(expense);
-            return new ResponseEntity<>(saved, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-        }
+        Expense saved = expenseService.saveExpense(expense);
+        return new ResponseEntity<>(saved, HttpStatus.OK);
     }
 
     @GetMapping("/delete")
@@ -87,11 +79,19 @@ public class ExpenseController {
                                                  @RequestBody Expense expense) {
 
         checkAuthCredentials(token, userId);
-        try {
-            Expense modifiedExpense = expenseService.modifyExpense(expense);
-            return new ResponseEntity<>(modifiedExpense, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
-        }
+        Expense modifiedExpense = expenseService.modifyExpense(expense);
+        return new ResponseEntity<>(modifiedExpense, HttpStatus.OK);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleInvalidInput(IllegalArgumentException e) {
+        return e.getMessage();
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleUnexpectedException(Exception e) {
+        return e.getMessage();
     }
 }

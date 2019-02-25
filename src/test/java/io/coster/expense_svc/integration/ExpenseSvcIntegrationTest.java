@@ -120,8 +120,8 @@ public class ExpenseSvcIntegrationTest {
     public void testListExpenses_WithInvalidMonthSpecified_ReturnsBadRequest() {
         HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
 
-        ResponseEntity response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-13", port),
-                HttpMethod.GET, new HttpEntity<>(cookieHeaders), Object.class);
+        ResponseEntity<String> response = restTemplate.exchange(String.format("http://localhost:%d/expense/list?month=2019-13", port),
+                HttpMethod.GET, new HttpEntity<>(cookieHeaders), String.class);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
     }
@@ -190,8 +190,8 @@ public class ExpenseSvcIntegrationTest {
                 .build();
         HttpHeaders cookieHeaders = getCookieHeaders("test@test.co.uk", "1234567");
 
-        ResponseEntity<Expense> modifyResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/modify", port),
-                HttpMethod.POST, new HttpEntity<>(expenseThatDoesNotExist, cookieHeaders), Expense.class);
+        ResponseEntity<String> modifyResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/modify", port),
+                HttpMethod.POST, new HttpEntity<>(expenseThatDoesNotExist, cookieHeaders), String.class);
         assertEquals(HttpStatus.BAD_REQUEST, modifyResponse.getStatusCode());
 
         ResponseEntity<List<Expense>> getResponse = restTemplate.exchange(String.format("http://localhost:%d/expense/list", port),
