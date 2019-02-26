@@ -1,10 +1,22 @@
-Service responsible for storing, listing, saving and deleting expense items.
+## Expense service
 
-1. Build the app:
-* if you have docker engine: mvn clean install
-* if not: mvn clean install -DskipDocker
+Microservice responsible for listing, saving, editing and deleting expense items. Developed in spring-boot.
 
-2. Run the app:
-* mvn spring-boot:run -Dspring.profiles.active=dev
-(the dev profile uses an in-memory database. If you have postgreSQL db running locally on the default port you might decide to leave out this profile flag)
+### Build the app:
+* Prerequisites: Maven, JDK11 (JDK8 not tested)
+* `mvn clean install` - if you have docker engine
+* `mvn clean install -DskipDocker` - if not
 
+### Run the app:
+- Run: `mvn spring-boot:run -Dspring.profiles.active=dev`
+    - the dev profile uses an in-memory database. If you have postgreSQL db running locally on the default port you might decide to leave out this profile flag
+    - default port: 9000
+    
+### REST Interface:
+- Swagger UI: localhost:9000/swagger-ui.html
+
+### Actuator endpoints:
+- Health: localhost:9000/actuator/health
+- Beans: localhost:9000/actuator/beans
+- Env vars: localhost:9000/actuator/env
+- Status: localhost:9000/actuator/status
