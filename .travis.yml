@@ -1,20 +1,21 @@
-# specify language
 language: java
 jdk:
   - openjdk11
-script:
-  - git update-index --chmod=+x mvnw
-  - mvn clean verify
 
-# configure which branches to run
 branches:
   only:
     - master
 
-after_script: # here's a build step block
-- echo "Done building the script. Hooray!"
+before_install:
+  - chmod +x mvnw
 
-notifications: # set notification options
+script:
+  - mvn clean verify
+
+after_script:
+  - echo "Done building the script. Hooray!"
+
+notifications:
   email:
     recipients:
       - marton.bod@gmail.com
@@ -23,5 +24,5 @@ notifications: # set notification options
     on_success: change
     on_failure: always
 
-  # Or we could just disable all email
+  # Or disable email
   # email: false
