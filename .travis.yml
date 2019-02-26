@@ -1,0 +1,26 @@
+# specify language
+language: java
+jdk:
+- 11
+sudo: false
+script: mvn clean verify
+
+# configure which branches to run
+branches:
+  only:
+    - master
+
+after_script: # here's a build step block
+- echo "Say Hello"
+
+notifications: # set notification options
+  email:
+    recipients:
+      - marton.bod@gmail.com
+
+    # change is when the repo status goes from pass to fail or vice versa
+    on_success: change
+    on_failure: always
+
+  # Or we could just disable all email
+  # email: false

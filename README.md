@@ -1,9 +1,9 @@
-## Expense service
+## Coster.io - Expense service
 
 Microservice responsible for listing, saving, editing and deleting expense items. Developed in spring-boot.
 
 ### Build the app:
-* Prerequisites: Maven, JDK11 (JDK8 not tested)
+* Prerequisites: Maven, JDK11 (note: JDK8 not yet tested)
 * `mvn clean install` - if you have docker engine
 * `mvn clean install -DskipDocker` - if not
 
