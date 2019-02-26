@@ -1,9 +1,10 @@
 # specify language
 language: java
 jdk:
-- openjdk11
-sudo: false
-script: mvn clean verify
+  - openjdk11
+script:
+  - git update-index --chmod=+x mvnw
+  - mvn clean verify
 
 # configure which branches to run
 branches:
@@ -11,7 +12,7 @@ branches:
     - master
 
 after_script: # here's a build step block
-- echo "Say Hello"
+- echo "Done building the script. Hooray!"
 
 notifications: # set notification options
   email:
