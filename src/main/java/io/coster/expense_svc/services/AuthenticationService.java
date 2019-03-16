@@ -30,9 +30,4 @@ public class AuthenticationService {
         return response.getBody() != null && response.getBody().isValid();
     }
 
-    public boolean doesUserIdExist(String userId) {
-        // TODO: add rest call to User service
-        return true;
-    }
-
 }

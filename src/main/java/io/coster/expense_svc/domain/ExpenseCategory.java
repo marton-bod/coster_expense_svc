@@ -9,6 +9,5 @@ public enum ExpenseCategory {
     CLOTHES,
     ELECTRONICS,
     ENTERTAINMENT,
-    OTHER_SHOPPING,
-    OTHER_MISC
+    OTHER
 }

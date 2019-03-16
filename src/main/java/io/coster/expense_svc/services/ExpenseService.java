@@ -43,10 +43,6 @@ public class ExpenseService {
         if (expense.getAmount() <= 0) {
             throw new IllegalArgumentException("Only positive amount values are allowed!");
         }
-
-        if (!authenticationService.doesUserIdExist(expense.getUserId())) {
-            throw new IllegalArgumentException("User ID does not exist!");
-        }
     }
 
     private boolean isBlank(String string) {
