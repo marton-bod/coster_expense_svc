@@ -24,6 +24,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -76,14 +77,8 @@ public class ExpenseSvcIntegrationTest {
 
     private HttpHeaders getCookieHeaders(String userId, String token) {
         HttpHeaders requestHeaders = new HttpHeaders();
-        List<String> cookies = new ArrayList<>();
-        if (userId != null) {
-            cookies.add("auth_id=" + userId);
-        }
-        if (token != null) {
-            cookies.add("auth_token=" + token);
-        }
-        requestHeaders.put(HttpHeaders.COOKIE, cookies);
+        requestHeaders.put("auth_id", Collections.singletonList(userId));
+        requestHeaders.put("auth_token", Collections.singletonList(token));
         return requestHeaders;
     }
 

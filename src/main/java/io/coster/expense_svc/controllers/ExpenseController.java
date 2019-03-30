@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -32,8 +33,8 @@ public class ExpenseController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<Expense>> listExpenses(@CookieValue(value = "auth_token") String token,
-                                                      @CookieValue(value = "auth_id") String userId,
+    public ResponseEntity<List<Expense>> listExpenses(@RequestHeader(value = "auth_token") String token,
+                                                      @RequestHeader(value = "auth_id") String userId,
                                                       @RequestParam(value = "month", required = false) String month) {
         checkAuthCredentials(token, userId);
         List<Expense> expenses;
@@ -54,8 +55,8 @@ public class ExpenseController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Expense> createExpense(@CookieValue(value = "auth_token") String token,
-                                                 @CookieValue(value = "auth_id") String userId,
+    public ResponseEntity<Expense> createExpense(@RequestHeader(value = "auth_token") String token,
+                                                 @RequestHeader(value = "auth_id") String userId,
                                                  @RequestBody Expense expense) {
 
         checkAuthCredentials(token, userId);
@@ -64,8 +65,8 @@ public class ExpenseController {
     }
 
     @GetMapping("/delete")
-    public ResponseEntity deleteExpense(@CookieValue(value = "auth_token") String token,
-                                        @CookieValue(value = "auth_id") String userId,
+    public ResponseEntity deleteExpense(@RequestHeader(value = "auth_token") String token,
+                                        @RequestHeader(value = "auth_id") String userId,
                                         @RequestParam("id") Long expenseId) {
 
         checkAuthCredentials(token, userId);
@@ -74,8 +75,8 @@ public class ExpenseController {
     }
 
     @PostMapping("/modify")
-    public ResponseEntity<Expense> modifyExpense(@CookieValue(value = "auth_token") String token,
-                                                 @CookieValue(value = "auth_id") String userId,
+    public ResponseEntity<Expense> modifyExpense(@RequestHeader(value = "auth_token") String token,
+                                                 @RequestHeader(value = "auth_id") String userId,
                                                  @RequestBody Expense expense) {
 
         checkAuthCredentials(token, userId);
