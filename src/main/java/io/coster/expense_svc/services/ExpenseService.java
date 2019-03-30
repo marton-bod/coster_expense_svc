@@ -30,11 +30,11 @@ public class ExpenseService {
     }
 
     public Expense saveExpense(Expense expense) {
-        validateNewExpense(expense);
+        validateExpense(expense);
         return expenseRepository.save(expense);
     }
 
-    private void validateNewExpense(Expense expense) {
+    private void validateExpense(Expense expense) {
         if (isBlank(expense.getLocation()) || isNull(expense.getAmount()) || isNull(expense.getDate())
                 || isNull(expense.getCategory()) || isNull(expense.getUserId())) {
             throw new IllegalArgumentException("None of the fields can be null or empty!");
@@ -55,6 +55,7 @@ public class ExpenseService {
     }
 
     public Expense modifyExpense(Expense expense) {
+        validateExpense(expense);
         Optional<Expense> byId = expenseRepository.findById(expense.getId());
         Expense old = byId.orElseThrow(() -> new IllegalArgumentException("Expense does not exist!"));
         updateExpense(old, expense);
