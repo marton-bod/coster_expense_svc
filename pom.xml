@@ -141,10 +141,6 @@
 									<include>${project.build.finalName}.jar</include>
 								</resource>
 							</resources>
-							<imageTags>
-								<imageTag>${project.version}</imageTag>
-								<imageTag>latest</imageTag>
-							</imageTags>
 						</configuration>
 					</plugin>
 				</plugins>
