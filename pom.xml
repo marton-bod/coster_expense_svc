@@ -131,9 +131,8 @@
 							</execution>
 						</executions>
 						<configuration>
-							<imageName>coster.io/expense-svc</imageName>
+							<imageName>martonbod/coster.io-expense-svc:1.0</imageName>
 							<dockerDirectory>docker</dockerDirectory>
-							<!-- copy the service's jar file from target into the root directory of the image -->
 							<resources>
 								<resource>
 									<targetPath>/</targetPath>
